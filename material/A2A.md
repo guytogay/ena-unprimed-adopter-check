@@ -83,14 +83,15 @@ See `SAFE-CHANGE.md` for resident versus session/coding Host profiles and human/
 
 ## Configuration example
 
-Stable configured discovery references belong in `ENA.yaml`:
+Stable configured discovery references belong in `ENA.yaml`. ENA control files use the strict mapping/scalar subset documented in `FIRST-USE.md`; block-sequence YAML (`- item`) is intentionally not accepted by the reference reader. Name peers as mapping keys instead:
 
 ```yaml
 communication:
   a2a:
     agent_card: https://agent.example.com/.well-known/agent-card.json
     rescue_peers:
-      - agent_card: https://peer.example.com/.well-known/agent-card.json
+      recovery-peer:
+        agent_card: https://peer.example.com/.well-known/agent-card.json
         access: configured
 ```
 

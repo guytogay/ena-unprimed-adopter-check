@@ -7,6 +7,7 @@ import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from language_tag import language_tag_problem
 from system_unknowns import initial_material_unknowns, render_unknowns_yaml, requirement_is_usable
 from timezone_utils import TimezoneUnavailable, load_timezone
 
@@ -33,8 +34,19 @@ def main() -> int:
     )
     args = p.parse_args()
 
+    # Validate every stable setting before creating directories or files. A
+    # malformed caller value must not leave behind a half-initialized home.
     if args.system_valid_hours <= 0:
         raise SystemExit("--system-valid-hours must be > 0")
+
+    language_problem = language_tag_problem(args.language)
+    if language_problem:
+        raise SystemExit(f"--language: {language_problem}")
+
+    try:
+        tz = load_timezone(args.timezone)
+    except TimezoneUnavailable as exc:
+        raise SystemExit(str(exc)) from exc
 
     if args.verified_minimum and not (
         requirement_is_usable(args.recovery)
@@ -45,11 +57,6 @@ def main() -> int:
             "--verified-minimum requires real --recovery and --rescuer references plus a non-UNKNOWN --rescuer-type; "
             "UNKNOWN/UNAVAILABLE/NOT_NEEDED/NOT_APPLICABLE/DEFERRED do not satisfy the minimum"
         )
-
-    try:
-        tz = load_timezone(args.timezone)
-    except TimezoneUnavailable as exc:
-        raise SystemExit(str(exc)) from exc
 
     home = Path(args.home).expanduser().resolve()
     for rel in (

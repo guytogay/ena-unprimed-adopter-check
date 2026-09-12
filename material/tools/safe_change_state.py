@@ -40,6 +40,10 @@ REQUIRED_FOR_ARM = (
 )
 
 PLACEHOLDER_MARKER = "UNCONFIGURED_ROLLBACK"
+ARMED_PROOF_NOTE = (
+    "NOTE: armed means the required recovery declarations/artifact shape passed this gate; "
+    "this transition does not prove that recovery executes successfully or restores operation."
+)
 
 # `rollback_mode` is what the package *declared*; `rollback_artifact` is what the
 # package can actually show. They are recorded separately because neither one
@@ -283,6 +287,8 @@ def main() -> int:
         fh.write(json.dumps(transition) + "\n")
 
     print(f"SAFE-CHANGE gate: {current} -> {args.to_state}")
+    if args.to_state == "armed":
+        print(ARMED_PROOF_NOTE)
     return 0
 
 
