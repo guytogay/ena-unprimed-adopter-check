@@ -1,0 +1,6 @@
+{"id":"m1","timestamp":"2026-01-10T09:00:00+08:00","source_type":"experience","domain":"operations","text":"A restart resolved a temporary service problem.","retrieval_count":8,"salience":4,"unresolved":false}
+{"id":"m2","timestamp":"2025-06-15T14:00:00+08:00","source_type":"document","domain":"biology","text":"Living systems can preserve useful responses to past disturbances.","retrieval_count":1,"salience":3,"unresolved":false}
+{"id":"m3","timestamp":"2024-11-03T20:00:00+08:00","source_type":"user","domain":"thinking","text":"Delay convergence and look for connections between distant domains.","retrieval_count":2,"salience":5,"unresolved":false}
+{"id":"m4","timestamp":"2026-09-01T11:00:00+08:00","source_type":"experience","domain":"agents","text":"An unresolved communication problem appeared after a configuration change.","retrieval_count":6,"salience":5,"unresolved":true}
+{"id":"m5","timestamp":"2025-02-20T08:30:00+08:00","source_type":"a2a","domain":"software","text":"A peer suggested preparing a reversal plan before an important change.","retrieval_count":0,"salience":4,"unresolved":false}
+{"id":"m6","timestamp":"2023-07-18T16:20:00+08:00","source_type":"document","domain":"ecology","text":"Diversity can preserve alternative responses when one strategy fails.","retrieval_count":0,"salience":2,"unresolved":false}

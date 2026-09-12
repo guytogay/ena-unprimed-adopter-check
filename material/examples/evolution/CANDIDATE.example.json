@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "id": "candidate-0123456789ab",
+  "created_at": "2026-09-12T14:00:00.000000+08:00",
+  "timezone": "Asia/Shanghai",
+  "origin": "dream",
+  "truth_status": "speculative",
+  "source_fragments": [
+    "memory:example-fragment",
+    "experience:example-validation"
+  ],
+  "candidate": "Replace this text with one bounded improvement candidate.",
+  "reality_check": "Replace this text with the concrete observation or trial that could support or reject the candidate.",
+  "actor": {
+    "executor": "UNKNOWN",
+    "initiated_by": "UNKNOWN",
+    "channel": "UNKNOWN",
+    "correlation_id": "UNKNOWN",
+    "attribution_confidence": "UNKNOWN"
+  },
+  "outcome": null
+}

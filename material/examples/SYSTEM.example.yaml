@@ -1,0 +1,48 @@
+schema_version: '0.2'
+checked_at: 2026-09-12T02:00:00+08:00
+valid_until: 2026-09-19T02:00:00+08:00
+minimum_ready: false
+
+runtime:
+  host: UNKNOWN
+  agent_runtime: UNKNOWN
+  host_profile: UNKNOWN
+  startup: UNKNOWN
+  restart: UNKNOWN
+  supervision: UNKNOWN
+
+communication:
+  human: UNKNOWN
+  a2a_reachability: UNKNOWN
+
+recovery:
+  primary: UNKNOWN
+  backup_or_snapshot: UNKNOWN
+  scheduler_or_timer: UNKNOWN
+
+rescue:
+  primary: UNKNOWN
+  type: UNKNOWN
+
+memory:
+  sources: []
+  durable_store: UNKNOWN
+  retrieval_or_index: UNKNOWN
+  write_method: UNKNOWN
+
+change_surfaces: []
+unknowns:
+  recovery.primary:
+    state: UNKNOWN
+    reason: "No verified recovery path was supplied to First Use."
+    resolution_path: "Inspect or establish one external recovery mechanism, verify it, then update recovery.primary."
+    owner: "agent"
+    revisit_by: "2026-09-19T02:00:00+08:00"
+    last_attempt_at: "2026-09-12T02:00:00+08:00"
+  rescue.primary:
+    state: UNKNOWN
+    reason: "No verified rescuer was supplied to First Use."
+    resolution_path: "Identify a human, Agent, or Host rescuer, verify reachability, then update rescue.primary."
+    owner: "agent"
+    revisit_by: "2026-09-19T02:00:00+08:00"
+    last_attempt_at: "2026-09-12T02:00:00+08:00"

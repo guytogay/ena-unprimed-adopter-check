@@ -1,0 +1,24 @@
+schema_version: '0.2'
+
+ena_home: .
+canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+canonical_language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
+text_encoding: UTF-8
+
+communication:
+  a2a:
+    agent_card: UNKNOWN
+    rescue_peers: []
+
+recovery:
+  changes: changes
+
+evolution:
+  records: evolution
+  # Advisory example-only key; current reference tools do not read it.
+  sleep_dream_config: evolution/sleep-dream.yaml
+  experience_inbox: evolution/experience
+  speculative_candidates: evolution/candidates/speculative
+  selected_candidates: evolution/candidates/selected
+  # Advisory example-only key; current reference tools do not read it.
+  scheduler: UNKNOWN

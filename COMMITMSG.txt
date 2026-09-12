@@ -1,0 +1,6 @@
+fresh validation surface: orphan root with an unprimed adopter task
+
+Contains a snapshot of the released product under material/ plus a neutral task
+statement (TASK.md). No oracle, no findings, no project history: this is a single
+orphan commit by construction, so a fresh evaluator cannot accidentally inherit
+prior experiment context.

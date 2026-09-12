@@ -1,0 +1,54 @@
+schema_version: '0.2'
+experimental_parameters: true
+
+timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
+
+paths:
+  experience_inbox: ~/.ena/evolution/experience
+  speculative_candidates: ~/.ena/evolution/candidates/speculative
+  selected_candidates: ~/.ena/evolution/candidates/selected
+  sleep_runs: ~/.ena/evolution/runs/sleep
+  dream_runs: ~/.ena/evolution/runs/dream
+
+memory:
+  sources: []
+  write_method: UNKNOWN
+  reversible_history_or_snapshot: UNKNOWN
+
+scheduler:
+  sleep: UNKNOWN
+  dream: UNKNOWN
+
+# The values below are starting field parameters, not ENA requirements.
+sleep:
+  enabled: true
+  cadence: null
+  trigger_after_new_experiences: 20
+  max_source_fragments: 80
+  max_generated_operations: 30
+  max_wall_clock_minutes: 20
+
+dream:
+  enabled: true
+  cadence: null
+  default_mode: free
+  default_intensity: medium
+  fragments_per_round:
+    min: 5
+    max: 7
+  pools:
+    recent: 1
+    old: 1
+    underused: 1
+    external_or_unresolved: 1
+    distant: 1
+    salient_max: 1
+    random_jump_max: 1
+  random_jump_probability: 0.10
+  close_grounding_share: 0.20
+  middle_distance_share: 0.65
+  far_or_random_share: 0.15
+  max_candidates_per_run: 5
+  max_wall_clock_minutes: 20
+  generated_truth_status: speculative
