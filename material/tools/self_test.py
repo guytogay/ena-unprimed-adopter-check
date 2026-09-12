@@ -45,11 +45,17 @@ def main() -> int:
         assert preflight.returncode == 2
         assert "REFRESH REQUIRED" in preflight.stdout
 
-        text = system.read_text(encoding="utf-8")
-        text = text.replace("minimum_ready: false", "minimum_ready: true")
-        text = text.replace("  primary: UNKNOWN\n  backup_or_snapshot", "  primary: git-revert\n  backup_or_snapshot", 1)
-        text = text.replace("rescue:\n  primary: UNKNOWN\n  type: UNKNOWN", "rescue:\n  primary: human-operator\n  type: human")
-        system.write_text(text, encoding="utf-8")
+        # Advance the minimum through the same evidence-bearing surface adopters use;
+        # a hand-edited scalar/minimum_ready bit is no longer readiness proof.
+        run(
+            tools / "ena_first_use.py",
+            "--home", home,
+            "--verified-recovery", "git-revert",
+            "--recovery-evidence", "self-test:restore-check",
+            "--verified-rescuer", "human-operator",
+            "--rescuer-evidence", "self-test:rescuer-check",
+            "--rescuer-type", "human",
+        )
         run(tools / "ena_preflight.py", "--home", home)
 
         preset_home = tmp / "ena-preset"
@@ -60,7 +66,9 @@ def main() -> int:
             "--language", "en-US",
             "--host-profile", "session",
             "--recovery", "git-revert",
+            "--recovery-evidence", "self-test:restore-check",
             "--rescuer", "human-operator",
+            "--rescuer-evidence", "self-test:rescuer-check",
             "--rescuer-type", "human",
             "--verified-minimum",
         )

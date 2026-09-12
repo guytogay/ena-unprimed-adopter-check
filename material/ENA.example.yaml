@@ -1,3 +1,4 @@
+# NOT RUNNABLE AS-IS — replace confirmed placeholders before using this as ENA.yaml.
 schema_version: '0.2'
 
 ena_home: .

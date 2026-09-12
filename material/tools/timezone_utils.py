@@ -16,6 +16,11 @@ class TimezoneUnavailable(ValueError):
 
 
 def load_timezone(name: str):
+    if name == "REPLACE_WITH_CONFIRMED_IANA_TIMEZONE":
+        raise TimezoneUnavailable(
+            "canonical_timezone still contains the shipped example placeholder "
+            "REPLACE_WITH_CONFIRMED_IANA_TIMEZONE; replace it with the confirmed IANA timezone before use"
+        )
     if name in {"UTC", "Etc/UTC"}:
         return timezone.utc
     try:

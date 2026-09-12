@@ -19,6 +19,14 @@ class TimezoneUtilsTests(unittest.TestCase):
         self.assertIn("tzdata", str(ctx.exception))
         self.assertIn("IANA timezone", str(ctx.exception))
 
+    def test_shipped_placeholder_is_not_misreported_as_missing_tzdata(self) -> None:
+        with self.assertRaises(TimezoneUnavailable) as ctx:
+            load_timezone("REPLACE_WITH_CONFIRMED_IANA_TIMEZONE")
+        message = str(ctx.exception)
+        self.assertIn("placeholder", message)
+        self.assertIn("replace", message.lower())
+        self.assertNotIn("Install the `tzdata`", message)
+
 
 if __name__ == "__main__":
     unittest.main()

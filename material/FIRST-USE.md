@@ -4,6 +4,14 @@ First Use should establish a usable minimum quickly. Unknown facts may remain `U
 
 Verify what can be inspected from the Host, runtime, files, tools, APIs or documentation. Do not guess when the environment can be checked.
 
+The executable path is:
+
+```text
+python tools/ena_first_use.py --home ~/.ena
+```
+
+With no confirmed settings it returns `NOT_READY` and does not manufacture an initialized home. On an existing home, a call that supplies no `--verified-*` update is observational: it may report READY/NOT_READY, but it must not normalize `minimum_ready`, refresh timestamps, promote an existing scalar, or delete UNKNOWN lifecycle evidence.
+
 ## Minimum First Use
 
 Complete these five things before treating ENA as active.
@@ -29,7 +37,7 @@ Examples:
 - restore a Git revision/worktree/file backup/snapshot;
 - another verified Host-native recovery action.
 
-Record the exact mechanism, or `UNKNOWN` if none exists yet.
+Record the exact mechanism, or `UNKNOWN` if none exists yet. A string already present in `SYSTEM.yaml` is a declaration, not proof that it was verified.
 
 ### 3. Identify one rescuer
 
@@ -61,6 +69,8 @@ evolution:
   selected_candidates: evolution/candidates/selected
 ```
 
+The shipped `ENA.example.yaml` is a template, not a runnable configuration. Replace its explicit `REPLACE_WITH_CONFIRMED_*` sentinels before using it as `ENA.yaml`.
+
 Machine-used ENA-owned paths are relative to the active ENA home, not the process working directory. Keep writable ENA state inside that home. Older schema-0.2 homes may contain absolute pointers; maintaining tools accept them only while they still resolve inside the same active home. If a copied or moved home still declares a different `ena_home`, reconcile the stable pointers before allowing new durable writes rather than following stale paths back to the old location.
 
 `SYSTEM.yaml` is the current system map. A not-yet-ready minimum may look like:
@@ -76,6 +86,7 @@ recovery:
   primary: UNKNOWN
 rescue:
   primary: UNKNOWN
+  type: UNKNOWN
 unknowns:
   recovery.primary:
     state: UNKNOWN
@@ -93,9 +104,49 @@ unknowns:
     last_attempt_at: "2026-09-12T02:00:00+08:00"
 ```
 
-The dates above are only an example. Choose a freshness window appropriate to the Host. The reference initializer starts with seven days; shorten or lengthen it when the environment changes at a different rate.
+A ready minimum carries the basis of the caller's verification next to each fact:
 
-Set `minimum_ready: true` only after shared settings, one recovery path, and one rescuer are recorded. If no usable recovery path or rescuer exists, leave it false and record the gap.
+```yaml
+minimum_ready: true
+recovery:
+  primary: REAL_RECOVERY_REFERENCE
+  verification_confidence: SELF_ASSERTED
+  verification_evidence: DURABLE_RECOVERY_CHECK_REFERENCE
+  verified_at: 2026-09-13T00:00:00+08:00
+rescue:
+  primary: REAL_RESCUER_REFERENCE
+  type: human
+  verification_confidence: SELF_ASSERTED
+  verification_evidence: DURABLE_RESCUER_CHECK_REFERENCE
+  verified_at: 2026-09-13T00:00:00+08:00
+```
+
+`SELF_ASSERTED` is an epistemic boundary, not authentication: the caller/integration asserts that it performed the referenced reality contact. ENA is not claiming that it independently executed, authenticated, or proved an arbitrary external mechanism.
+
+`minimum_ready` is a derived snapshot bit, not independent evidence. The reference gate accepts only the canonical lowercase tokens `true` and `false`; `TRUE` is not silently normalized. READY requires the recovery and rescuer declarations, their evidence-bearing verification metadata, a concrete rescuer type (`human | agent | host`), valid shared settings, and fresh SYSTEM state.
+
+The dates above are examples. Choose a freshness window appropriate to the Host. The reference initializer starts with seven days; shorten or lengthen it when the environment changes at a different rate.
+
+#### Advancing First Use
+
+Use evidence-bearing updates for minimum facts:
+
+```text
+python tools/ena_first_use.py --home ~/.ena \
+  --verified-recovery REAL_RECOVERY_REFERENCE \
+  --recovery-evidence DURABLE_RECOVERY_CHECK_REFERENCE
+
+python tools/ena_first_use.py --home ~/.ena \
+  --verified-rescuer REAL_RESCUER_REFERENCE \
+  --rescuer-evidence DURABLE_RESCUER_CHECK_REFERENCE \
+  --rescuer-type human
+```
+
+Partial progress is valid: one side may be verified while the other remains `UNKNOWN`, but the home remains NOT_READY until both sides satisfy the shared minimum predicate.
+
+Do not infer verification from an already-present scalar. `x`, `asdf`, `TBD`, a path-looking string, and a human-looking name are epistemically equivalent to ENA when they arrive without verification provenance. ENA deliberately does not grow a natural-language placeholder blacklist. A short declaration is acceptable when the caller explicitly verified it and supplies evidence; a realistic-looking declaration without provenance is not readiness proof.
+
+If a minimum lifecycle entry and its current fact contradict each other, inspection fails closed. For example, `unknowns.recovery.primary` must not coexist with `recovery.primary: some-value`. Do not fix that by deleting the lifecycle entry merely because a scalar exists. The targeted entry may be removed only as part of an explicit evidence-bearing update that establishes that fact.
 
 #### Material UNKNOWN lifecycle
 
@@ -116,7 +167,7 @@ last_attempt_at
 
 A material UNKNOWN must record a real resolution attempt. If the attempt could not be performed, record why it was impossible and the next real path instead of pretending the fact was resolved. If `revisit_by` passes while the same fact is still `UNKNOWN` and no newer attempt has established a new revisit point, mark the lifecycle `STALLED_UNKNOWN`.
 
-When the fact becomes known, or is positively established as another state such as `UNAVAILABLE`, `NOT_NEEDED`, `NOT_APPLICABLE`, or `DEFERRED`, remove its entry from `unknowns`; `SYSTEM.yaml` is the current snapshot, not a second history ledger. Those states are distinct and must not be used merely to avoid UNKNOWN metadata.
+When a fact is explicitly established as known, or positively established as another state such as `UNAVAILABLE`, `NOT_NEEDED`, `NOT_APPLICABLE`, or `DEFERRED`, its current UNKNOWN lifecycle entry no longer applies. `SYSTEM.yaml` is the current snapshot, not a second history ledger. For First Use minimum facts, the reference maintenance path removes that entry only when the same call carries the explicit evidence-bearing verified update; inspection alone never treats an existing scalar as permission to erase the gap.
 
 ENA gives control semantics only to its documented state tokens. Strings such as `unset`, `n/a`, or `TBD` are ordinary literal strings, not an ever-growing global synonym list. A field with a stricter enum should validate that enum itself; do not expand `control_yaml.missing()` into natural-language guesswork.
 
@@ -126,7 +177,7 @@ Validate the current lifecycle with:
 python tools/system_unknowns.py --home ~/.ena
 ```
 
-A correctly recorded `STALLED_UNKNOWN` is a valid lifecycle state; it does not by itself turn every unrelated task into a blocker. Missing/inconsistent metadata is a contract error, and First Use minimum facts still fail preflight until a real recovery path and rescuer exist.
+A correctly recorded `STALLED_UNKNOWN` is a valid lifecycle state; it does not by itself turn every unrelated task into a blocker. Missing/inconsistent metadata is a contract error. `ena_preflight.py` checks contradictions for the fixed recovery/rescuer minimum, but it does not embed the entire UNKNOWN lifecycle checker as a universal startup gate.
 
 #### One authority per fact class
 
@@ -149,7 +200,7 @@ The report is read-only. For duplicated live facts, a fresh known `SYSTEM.yaml` 
 
 `SYSTEM.yaml` is not timeless truth.
 
-Run `python tools/ena_preflight.py` at session/Agent/workspace start when the Host supports a startup hook. Refresh First Use when the file is past `valid_until`.
+Run `python tools/ena_preflight.py --home ~/.ena` at session/Agent/workspace start when the Host supports a startup hook. Refresh First Use when the file is past `valid_until`.
 
 Before an important self-change, recheck the specific mutable recovery/startup/communication facts the change depends on even if `SYSTEM.yaml` has not yet expired.
 
@@ -166,12 +217,13 @@ pre-provision timezone + language + ENA home
 → detect/select Host profile where practical
 → verify one external recovery path
 → verify one human / Agent / Host rescuer
+→ retain durable references/descriptions of those verification contacts
 → write ENA.yaml + SYSTEM.yaml
-→ set minimum_ready only after those supplied mechanisms were actually verified
+→ set minimum_ready only when the strengthened predicate passes
 → run ena_preflight.py
 ```
 
-The reference initializer supports caller-verified presets, for example:
+The reference initializer supports a fully pre-verified preset:
 
 ```text
 python tools/ena_init.py \
@@ -179,12 +231,16 @@ python tools/ena_init.py \
   --language CONFIRMED_LANGUAGE_TAG \
   --host-profile session \
   --recovery VERIFIED_RECOVERY_REFERENCE \
+  --recovery-evidence DURABLE_RECOVERY_CHECK_REFERENCE \
   --rescuer VERIFIED_RESCUER_REFERENCE \
+  --rescuer-evidence DURABLE_RESCUER_CHECK_REFERENCE \
   --rescuer-type human \
   --verified-minimum
 ```
 
-`--verified-minimum` is intentionally explicit. The initializer does not prove an arbitrary recovery command or rescuer is real; the caller/integration that supplies those values is responsible for that verification.
+`--verified-minimum` is intentionally explicit. It requires both evidence references and records `verification_confidence: SELF_ASSERTED` plus `verified_at` for both minimum facts. The initializer still does not independently prove the external mechanisms.
+
+An older home that says `minimum_ready: true` but lacks the verification metadata above fails closed under the current readiness contract. Inspection/preflight does not invent evidence or silently migrate it; attach current evidence through First Use.
 
 If policy does not already provide timezone, language, ENA home, recovery or rescuer, leave the setup not ready and obtain or establish the missing value instead of inventing one.
 
@@ -214,9 +270,11 @@ Additional useful facts may include Git/version control, backups, snapshots, log
 
 - timezone, language and ENA home are confirmed or explicitly pre-provisioned by trusted policy;
 - `ENA.yaml` exists;
-- `SYSTEM.yaml` has `checked_at`, `valid_until` and `minimum_ready: true`;
-- one real recovery path is recorded;
-- one human, Agent or Host rescuer is recorded;
+- `SYSTEM.yaml` has fresh `checked_at` / `valid_until` and canonical `minimum_ready: true`;
+- one recovery path and one human/Agent/Host rescuer are recorded;
+- each of those two facts has `verification_confidence: SELF_ASSERTED`, a durable `verification_evidence` reference/description, and offset-aware `verified_at`;
+- the rescuer has a concrete `type`;
+- no contradictory lifecycle entry remains for either minimum fact;
 - unknown facts remain visible as `UNKNOWN` rather than being guessed.
 
 Then continue with the capabilities actually needed on this Host.

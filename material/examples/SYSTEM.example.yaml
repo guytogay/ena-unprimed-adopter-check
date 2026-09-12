@@ -1,3 +1,5 @@
+# EXAMPLE ONLY — do not overwrite a live SYSTEM.yaml with this snapshot.
+# Live SYSTEM facts are freshness-bounded operational state and may contain verified recovery/rescuer evidence.
 schema_version: '0.2'
 checked_at: 2026-09-12T02:00:00+08:00
 valid_until: 2026-09-19T02:00:00+08:00

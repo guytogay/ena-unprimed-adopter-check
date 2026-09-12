@@ -36,6 +36,21 @@ python tools/ena_first_use.py \
 
 A detected Host value is only a hint until a user, policy, or other explicit authority confirms it.
 
+Recovery/rescuer values become readiness evidence only through an explicit verification-bearing update, for example:
+
+```bash
+python tools/ena_first_use.py --home ~/.ena \
+  --verified-recovery REAL_RECOVERY_REFERENCE \
+  --recovery-evidence DURABLE_RECOVERY_CHECK_REFERENCE
+
+python tools/ena_first_use.py --home ~/.ena \
+  --verified-rescuer REAL_RESCUER_REFERENCE \
+  --rescuer-evidence DURABLE_RESCUER_CHECK_REFERENCE \
+  --rescuer-type human
+```
+
+An existing scalar by itself is not promoted into a verified minimum fact. On an existing home, a First Use call without a `--verified-*` update is observational and does not rewrite readiness state merely because it read a value.
+
 ## Reading is not installation
 
 For a capability you choose to adopt, completion requires one of these:
@@ -59,7 +74,7 @@ python tools/ena_preflight.py --home ~/.ena
 
 before ordinary work.
 
-The preflight fails when the local ENA setup is missing, First Use is not marked minimally ready, or `SYSTEM.yaml` is stale. In that case, run `ena_first_use.py` / refresh `FIRST-USE.md` instead of merely acknowledging the instruction and continuing.
+The preflight fails when the local ENA setup is missing, the strengthened minimum readiness predicate does not pass, or `SYSTEM.yaml` is stale. The `minimum_ready` bit is not sufficient by itself: recovery and rescuer verification provenance must also be present and internally consistent. In that case, run `ena_first_use.py` / refresh `FIRST-USE.md` instead of merely acknowledging the instruction and continuing.
 
 If the Host has no startup hook, run the same preflight at the start of a new working session.
 
@@ -77,7 +92,7 @@ A typical installation starts with:
   evolution/
 ```
 
-Use `ENA.example.yaml` and `examples/SYSTEM.example.yaml` as starting points.
+`ENA.example.yaml` and `examples/SYSTEM.example.yaml` are templates/examples, not live-state replacement commands. Replace confirmed placeholders before use, and never overwrite an established live `SYSTEM.yaml` with the shipped example: doing so would discard freshness-bounded operational facts and verification evidence outside the reference tools' control.
 
 ENA control files intentionally use a strict mapping/scalar YAML subset. Block sequences (`- item`) and multiline/block scalars are not accepted by `tools/control_yaml.py`; documented machine-read examples must stay inside that subset.
 
@@ -115,7 +130,7 @@ python tools/test_doc_control_yaml.py
 python tools/self_test.py
 ```
 
-Then see `tools/README.md` for runnable examples. Prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
+Then see `tools/README.md` for runnable examples and the centralized READY/NOT_READY interaction table. Prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
 
 `ena_home.py` refuses a home without a readable `ENA.yaml` and a resolvable `canonical_timezone` so durable state is never timestamped by an implicit UTC fallback. `ena_text.py` reads ENA-owned text tolerating a leading UTF-8 byte order mark written by some Host-native paths.
 

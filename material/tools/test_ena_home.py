@@ -68,7 +68,9 @@ class HomeBoundaryTests(unittest.TestCase):
             "--language", "en-US",
             "--host-profile", "session",
             "--recovery", "git-revert",
+            "--recovery-evidence", "home-boundary:restore-check",
             "--rescuer", "human-operator",
+            "--rescuer-evidence", "home-boundary:rescuer-check",
             "--rescuer-type", "human",
             "--verified-minimum",
         )

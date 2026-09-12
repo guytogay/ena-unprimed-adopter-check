@@ -48,9 +48,15 @@ runtime:
   host_profile: session
 recovery:
   primary: git-revert
+  verification_confidence: SELF_ASSERTED
+  verification_evidence: boundary-matrix:restore-check
+  verified_at: 2026-01-01T00:00:00+00:00
 rescue:
   primary: human-operator
   type: human
+  verification_confidence: SELF_ASSERTED
+  verification_evidence: boundary-matrix:rescuer-check
+  verified_at: 2026-01-01T00:00:00+00:00
 """
 
 CORRUPT = "this is not: [valid\n  control yaml\n"

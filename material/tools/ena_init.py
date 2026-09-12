@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from language_tag import language_tag_problem
+from minimum_readiness import SELF_ASSERTED, evidence_problem
 from system_unknowns import initial_material_unknowns, render_unknowns_yaml, requirement_is_usable
 from timezone_utils import TimezoneUnavailable, load_timezone
 
@@ -18,13 +19,23 @@ def main() -> int:
     p.add_argument("--timezone", required=True, help="Confirmed/pre-provisioned IANA timezone")
     p.add_argument("--language", required=True, help="Confirmed/pre-provisioned language tag")
     p.add_argument("--host-profile", choices=("resident", "session"), default="UNKNOWN")
-    p.add_argument("--recovery", default="UNKNOWN", help="Verified external recovery path/reference")
-    p.add_argument("--rescuer", default="UNKNOWN", help="Verified human/Agent/Host recovery actor")
+    p.add_argument(
+        "--recovery",
+        default="UNKNOWN",
+        help="Recovery path/reference; it counts toward READY only with --verified-minimum and evidence",
+    )
+    p.add_argument(
+        "--rescuer",
+        default="UNKNOWN",
+        help="Human/Agent/Host rescuer reference; it counts toward READY only with --verified-minimum and evidence",
+    )
     p.add_argument("--rescuer-type", choices=("human", "agent", "host", "UNKNOWN"), default="UNKNOWN")
+    p.add_argument("--recovery-evidence", help="Durable reference/description of the recovery verification")
+    p.add_argument("--rescuer-evidence", help="Durable reference/description of the rescuer verification")
     p.add_argument(
         "--verified-minimum",
         action="store_true",
-        help="Mark minimum_ready only when the supplied recovery/rescuer values were already verified by the caller",
+        help="Mark minimum_ready only when both supplied minimum facts were caller-verified with evidence",
     )
     p.add_argument(
         "--system-valid-hours",
@@ -34,8 +45,8 @@ def main() -> int:
     )
     args = p.parse_args()
 
-    # Validate every stable setting before creating directories or files. A
-    # malformed caller value must not leave behind a half-initialized home.
+    # Validate every stable/verification setting before creating directories or
+    # files. A rejected caller assertion must not leave a half-initialized home.
     if args.system_valid_hours <= 0:
         raise SystemExit("--system-valid-hours must be > 0")
 
@@ -48,15 +59,25 @@ def main() -> int:
     except TimezoneUnavailable as exc:
         raise SystemExit(str(exc)) from exc
 
-    if args.verified_minimum and not (
-        requirement_is_usable(args.recovery)
-        and requirement_is_usable(args.rescuer)
-        and args.rescuer_type != "UNKNOWN"
-    ):
-        raise SystemExit(
-            "--verified-minimum requires real --recovery and --rescuer references plus a non-UNKNOWN --rescuer-type; "
-            "UNKNOWN/UNAVAILABLE/NOT_NEEDED/NOT_APPLICABLE/DEFERRED do not satisfy the minimum"
-        )
+    if not args.verified_minimum and (args.recovery_evidence is not None or args.rescuer_evidence is not None):
+        raise SystemExit("--recovery-evidence/--rescuer-evidence require --verified-minimum")
+
+    if args.verified_minimum:
+        if not (
+            requirement_is_usable(args.recovery)
+            and requirement_is_usable(args.rescuer)
+            and args.rescuer_type != "UNKNOWN"
+        ):
+            raise SystemExit(
+                "--verified-minimum requires real --recovery and --rescuer references plus a non-UNKNOWN --rescuer-type; "
+                "UNKNOWN/UNAVAILABLE/NOT_NEEDED/NOT_APPLICABLE/DEFERRED do not satisfy the minimum"
+            )
+        recovery_evidence_issue = evidence_problem(args.recovery_evidence)
+        rescuer_evidence_issue = evidence_problem(args.rescuer_evidence)
+        if recovery_evidence_issue:
+            raise SystemExit(f"--recovery-evidence {recovery_evidence_issue}")
+        if rescuer_evidence_issue:
+            raise SystemExit(f"--rescuer-evidence {rescuer_evidence_issue}")
 
     home = Path(args.home).expanduser().resolve()
     for rel in (
@@ -105,6 +126,20 @@ def main() -> int:
         checked_at=checked,
         revisit_by=valid_until,
     )
+    recovery_verification = ""
+    rescue_verification = ""
+    if args.verified_minimum:
+        recovery_verification = (
+            f"  verification_confidence: {SELF_ASSERTED}\n"
+            f"  verification_evidence: {args.recovery_evidence}\n"
+            f"  verified_at: {checked.isoformat()}\n"
+        )
+        rescue_verification = (
+            f"  verification_confidence: {SELF_ASSERTED}\n"
+            f"  verification_evidence: {args.rescuer_evidence}\n"
+            f"  verified_at: {checked.isoformat()}\n"
+        )
+
     system_text = (
         "schema_version: '0.2'\n"
         f"checked_at: {checked.isoformat()}\n"
@@ -122,12 +157,14 @@ def main() -> int:
         "  a2a_reachability: UNKNOWN\n"
         "recovery:\n"
         f"  primary: {args.recovery}\n"
-        "  backup_or_snapshot: UNKNOWN\n"
+        + recovery_verification
+        + "  backup_or_snapshot: UNKNOWN\n"
         "  scheduler_or_timer: UNKNOWN\n"
         "rescue:\n"
         f"  primary: {args.rescuer}\n"
         f"  type: {args.rescuer_type}\n"
-        "memory:\n"
+        + rescue_verification
+        + "memory:\n"
         "  sources: []\n"
         "  durable_store: UNKNOWN\n"
         "  retrieval_or_index: UNKNOWN\n"
@@ -140,9 +177,9 @@ def main() -> int:
     print(config)
     print(system)
     if args.verified_minimum:
-        print("Minimum First Use recorded from caller-verified preset values.")
+        print("Minimum First Use recorded from caller-verified values with durable evidence references.")
     else:
-        print("First Use is not complete yet: verify recovery/rescue facts and set minimum_ready: true.")
+        print("First Use is not complete yet: verify recovery/rescue facts and use the First Use evidence path.")
     return 0
 
 
